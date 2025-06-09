@@ -24,22 +24,21 @@ export class Message {
         if (!this.isVisible) return;
 
         ctx.save();
-        ctx.font = this.font;
-        ctx.fillStyle = this.textColor;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillRect(0, 0, GAME_CONSTANTS.BOARD_WIDTH, GAME_CONSTANTS.BOARD_HEIGHT);
+
+        ctx.font = '48px Arial';
+        ctx.fillStyle = 'white';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
         const lines = this.text.split('\n');
-        const lineHeight = 30;
+        const lineHeight = 60;
         const totalHeight = lines.length * lineHeight;
         const startY = (GAME_CONSTANTS.BOARD_HEIGHT - totalHeight) / 2;
 
-        lines.forEach((line, index) => {
-            ctx.fillText(
-                line,
-                GAME_CONSTANTS.BOARD_WIDTH / 2,
-                startY + index * lineHeight
-            );
+        lines.forEach((line, i) => {
+            ctx.fillText(line, GAME_CONSTANTS.BOARD_WIDTH / 2, startY + i * lineHeight);
         });
 
         ctx.restore();

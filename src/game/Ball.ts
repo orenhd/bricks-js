@@ -1,4 +1,4 @@
-import { GAME_CONSTANTS } from '../constants';
+import { GAME_CONSTANTS, SpriteState } from '../constants';
 import { Sprite } from './Sprite';
 import { Vector2D } from '../types/Vector2D';
 
@@ -37,16 +37,12 @@ export class Ball extends Sprite {
         this.lastBrickTime = time;
     }
 
-    override update(gameTime: number, elapsedTime: number): void {
-        // Fix rotation to prevent too horizontal angles
-        this.rotation = Ball.fixRotation(this.rotation);
-
-        // Update velocity based on rotation and speed
-        this.velocity = Vector2D.fromAngle(this.rotation, this.speed);
-
-        // Update position
-        const movement = this.velocity.multiply(elapsedTime);
-        this.location = this.location.add(movement);
+    override update(_gameTime: number, elapsedTime: number): void {
+        if (this.state === SpriteState.Dead) return;
+        
+        // Update position based on rotation and speed
+        this.location.x += Math.cos(this.rotation) * this.speed * elapsedTime;
+        this.location.y += Math.sin(this.rotation) * this.speed * elapsedTime;
     }
 
     override draw(ctx: CanvasRenderingContext2D): void {

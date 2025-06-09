@@ -1,5 +1,3 @@
-import { GAME_CONSTANTS } from '../../constants';
-
 export class Score {
     private points: number = 0;
     private readonly font = '20px Arial';

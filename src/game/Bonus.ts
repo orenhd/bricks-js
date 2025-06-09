@@ -1,6 +1,5 @@
 import { BonusType, GAME_CONSTANTS } from '../constants';
 import { Sprite } from './Sprite';
-import { Vector2D } from '../types/Vector2D';
 
 export class Bonus extends Sprite {
     private type: BonusType;

@@ -1,6 +1,5 @@
 import { BrickType } from '../constants';
 import { Sprite } from './Sprite';
-import { Vector2D } from '../types/Vector2D';
 import { Bonus } from './Bonus';
 import { GAME_CONSTANTS } from '../constants';
 
