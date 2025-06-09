@@ -17,16 +17,22 @@ export class LevelLoader {
                 this.allLevels = text.trim().split('\n');
             }
 
-            // Calculate starting line for the level, wrapping around if needed
-            const startLine = ((levelNumber - 1) * this.ROWS) % this.allLevels.length;
-            const levelData = this.allLevels.slice(startLine, startLine + this.ROWS);
-
-            // If we don't have enough lines for a full level, wrap around to the beginning
-            while (levelData.length < this.ROWS) {
-                const remainingLines = this.ROWS - levelData.length;
-                levelData.push(...this.allLevels.slice(0, remainingLines));
+            // Find the start of the requested level
+            let levelStart = -1;
+            for (let i = 0; i < this.allLevels.length; i++) {
+                if (this.allLevels[i].trim() === levelNumber.toString()) {
+                    levelStart = i + 1; // Skip the level number line
+                    break;
+                }
             }
 
+            if (levelStart === -1) {
+                console.error('Level not found:', levelNumber);
+                return [];
+            }
+
+            // Get the level data (8 rows)
+            const levelData = this.allLevels.slice(levelStart, levelStart + this.ROWS);
             return this.parseLevel(levelData.join('\n'));
         } catch (error) {
             console.error('Error loading level:', error);
@@ -72,15 +78,17 @@ export class LevelLoader {
         switch (char.toUpperCase()) {
             case 'R': return BrickType.Regular;
             case 'D': return BrickType.DoubleHit;
+            case '_': return BrickType.None;
             default: return BrickType.None;
         }
     }
 
     private static parseBonusType(char: string): BonusType {
-        switch (char.toLowerCase()) {  // Note: C# uses lowercase for bonus types
-            case 't': return BonusType.ThreeBalls;
-            case 's': return BonusType.SuperSize;
-            case 'm': return BonusType.SlowMotion;
+        switch (char) {
+            case '3': return BonusType.ThreeBalls;
+            case '4': return BonusType.SuperSize;
+            case '5': return BonusType.SlowMotion;
+            case '-': return BonusType.None;
             default: return BonusType.None;
         }
     }
