@@ -1,7 +1,7 @@
 import { GameEngine } from '../engine/GameEngine';
 import { Ball } from './Ball';
 import { Brick } from './Brick';
-import { GameState, GAME_CONSTANTS, SpriteState, BonusType } from '../constants';
+import { GameState, GAME_CONSTANTS, SpriteState, BonusType, BrickType } from '../constants';
 import { LevelLoader } from './LevelLoader';
 import { Message } from './ui/Message';
 import { Paddle, PaddleResize } from './Paddle';
@@ -249,13 +249,24 @@ export class BricksGame extends GameEngine {
                         newRotation = ball.getRotation() * -1 + Math.PI;
                     }
 
-                    // Handle brick hit
-                    brick.setState(SpriteState.Dead);
-                    this.score.addPoints(100);
+                    // Handle brick hit based on type
+                    if (brick.getType() === BrickType.Regular) {
+                        brick.setState(SpriteState.Dead);
+                        this.score.addPoints(100);
 
-                    // Handle bonus
+                        // Handle bonus
+                        const bonus = brick.getBonus();
+                        if (bonus && bonus.getState() === SpriteState.Dead) {
+                            bonus.setState(SpriteState.Alive);
+                        }
+                    } else if (brick.getType() === BrickType.DoubleHit) {
+                        brick.setState(SpriteState.Stunned);
+                        brick.setType(BrickType.Regular);
+                    }
+
+                    // Handle bonus activation
                     const bonus = brick.getBonus();
-                    if (bonus) {
+                    if (bonus && bonus.getState() === SpriteState.Alive) {
                         switch (bonus.getType()) {
                             case BonusType.ThreeBalls:
                                 this.balls.forEach(b => {
@@ -275,6 +286,8 @@ export class BricksGame extends GameEngine {
                                 break;
                         }
                     }
+                } else if (brick.getState() === SpriteState.Stunned) {
+                    brick.setState(SpriteState.Alive);
                 }
             }
         });

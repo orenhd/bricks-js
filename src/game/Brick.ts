@@ -27,6 +27,10 @@ export class Brick extends Sprite {
         return this.type;
     }
 
+    public setType(type: BrickType): void {
+        this.type = type;
+    }
+
     public getBonus(): Bonus | null {
         return this.bonus;
     }
