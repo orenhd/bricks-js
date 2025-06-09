@@ -21,7 +21,6 @@ export class BricksGame extends GameEngine {
     private isSlowMotion: boolean = false;
     private slowMotionTime: number = 0;
     private readonly SLOW_MOTION_DURATION = 10; // seconds
-    private levelFinishTime: number = 0;
     private isLevelComplete: boolean = false;
 
     constructor(canvas: HTMLCanvasElement) {
@@ -54,7 +53,6 @@ export class BricksGame extends GameEngine {
         this.level = levelNum;
         this.bricks = await LevelLoader.loadLevel(levelNum);
         this.isLevelComplete = false;
-        this.levelFinishTime = 0;
         this.gameState = GameState.Intro;
         
         // Add an extra life
@@ -122,7 +120,6 @@ export class BricksGame extends GameEngine {
         // Check for level completion
         if (!this.isLevelComplete && this.bricks.every(brick => brick.getState() === SpriteState.Dead)) {
             this.isLevelComplete = true;
-            this.levelFinishTime = gameTime;
             this.gameState = GameState.Intro;
             this.message.show(`Level ${this.level} Complete!\n\n~ Get Ready ~\nPress SPACE to continue`);
             
