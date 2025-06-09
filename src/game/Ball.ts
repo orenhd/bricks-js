@@ -39,10 +39,19 @@ export class Ball extends Sprite {
 
     override update(_gameTime: number, elapsedTime: number): void {
         if (this.state === SpriteState.Dead) return;
+
+        // Fix rotation to prevent too horizontal angles
+        this.rotation = Ball.fixRotation(this.rotation);
         
-        // Update position based on rotation and speed
-        this.location.x += Math.cos(this.rotation) * this.speed * elapsedTime;
-        this.location.y += Math.sin(this.rotation) * this.speed * elapsedTime;
+        // Update velocity based on rotation and speed (matching C# exactly)
+        this.velocity = new Vector2D(
+            -Math.cos(this.rotation) * this.speed,
+            Math.sin(this.rotation) * this.speed
+        );
+
+        // Update position
+        this.location.x += this.velocity.x * elapsedTime;
+        this.location.y += this.velocity.y * elapsedTime;
     }
 
     override draw(ctx: CanvasRenderingContext2D): void {
@@ -52,5 +61,27 @@ export class Ball extends Sprite {
         ctx.arc(this.location.x, this.location.y, this.radius, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
+    }
+
+    private static fixRotation(rotation: number): number {
+        rotation = rotation % (Math.PI * 2);
+        if (rotation < 0) rotation += Math.PI * 2;
+
+        const PI_5 = Math.PI / 5;
+        const PI_4_5 = Math.PI * 4 / 5;
+        const PI_6_5 = Math.PI * 6 / 5;
+        const PI_9_5 = Math.PI * 9 / 5;
+
+        if (rotation >= 0 && rotation <= PI_5) {
+            rotation = PI_5;
+        } else if (rotation >= PI_4_5 && rotation <= Math.PI) {
+            rotation = PI_4_5;
+        } else if (rotation > Math.PI && rotation <= PI_6_5) {
+            rotation = PI_6_5;
+        } else if (rotation >= PI_9_5 && rotation < Math.PI * 2) {
+            rotation = PI_9_5;
+        }
+
+        return rotation;
     }
 } 

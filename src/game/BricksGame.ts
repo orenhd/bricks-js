@@ -216,6 +216,9 @@ export class BricksGame extends GameEngine {
         }
 
         // Brick collisions
+        let isBounce = false;
+        let newRotation = ball.getRotation();
+        
         this.bricks.forEach(brick => {
             if (brick.getState() === SpriteState.Dead) return;
 
@@ -235,45 +238,51 @@ export class BricksGame extends GameEngine {
                 ballLoc.y + radius >= brickBounds.top &&
                 ballLoc.y - radius <= brickBounds.bottom) {
 
-                // Determine collision side and bounce
-                const hitLeft = ballLoc.x < brickBounds.left;
-                const hitRight = ballLoc.x > brickBounds.right;
-                const hitTop = ballLoc.y < brickBounds.top;
-                const hitBottom = ballLoc.y > brickBounds.bottom;
+                if (brick.getState() !== SpriteState.Stunned) {
+                    isBounce = true;
+                    
+                    // Use last position to determine collision side (matching C#)
+                    const lastPos = ball.getLastNoBrickLocation();
+                    if (lastPos.y > brickBounds.bottom || lastPos.y < brickBounds.top) {
+                        newRotation = ball.getRotation() * -1;
+                    } else {
+                        newRotation = ball.getRotation() * -1 + Math.PI;
+                    }
 
-                if (hitLeft || hitRight) {
-                    ball.setRotation(-ball.getRotation());
-                } else if (hitTop || hitBottom) {
-                    ball.setRotation(Math.PI - ball.getRotation());
-                }
+                    // Handle brick hit
+                    brick.setState(SpriteState.Dead);
+                    this.score.addPoints(100);
 
-                // Handle brick hit
-                brick.setState(SpriteState.Dead);
-                this.score.addPoints(100);
-
-                // Handle bonus
-                const bonus = brick.getBonus();
-                if (bonus) {
-                    switch (bonus.getType()) {
-                        case BonusType.ThreeBalls:
-                            this.balls.forEach(b => {
-                                if (b.getState() === SpriteState.Dead) {
-                                    b.setState(SpriteState.Alive);
-                                    b.setLocation(ball.getLocation().clone());
-                                    b.setRotation(Math.random() * Math.PI * 2);
-                                }
-                            });
-                            break;
-                        case BonusType.SuperSize:
-                            this.paddle.setResizeState(PaddleResize.Grow);
-                            break;
-                        case BonusType.SlowMotion:
-                            this.isSlowMotion = true;
-                            this.slowMotionTime = gameTime;
-                            break;
+                    // Handle bonus
+                    const bonus = brick.getBonus();
+                    if (bonus) {
+                        switch (bonus.getType()) {
+                            case BonusType.ThreeBalls:
+                                this.balls.forEach(b => {
+                                    if (b.getState() === SpriteState.Dead) {
+                                        b.setState(SpriteState.Alive);
+                                        b.setLocation(ball.getLocation().clone());
+                                        b.setRotation(Math.random() * Math.PI * 2);
+                                    }
+                                });
+                                break;
+                            case BonusType.SuperSize:
+                                this.paddle.setResizeState(PaddleResize.Grow);
+                                break;
+                            case BonusType.SlowMotion:
+                                this.isSlowMotion = true;
+                                this.slowMotionTime = gameTime;
+                                break;
+                        }
                     }
                 }
             }
         });
+
+        if (!isBounce) {
+            ball.setLastNoBrickLocation(ball.getLocation().clone());
+        } else {
+            ball.setRotation(newRotation);
+        }
     }
 } 
