@@ -5,7 +5,6 @@ export class Message {
     private isVisible: boolean = false;
     private readonly font = '24px Arial';
     private readonly textColor = 'white';
-    private readonly padding = 20;
 
     public show(text: string): void {
         this.text = text;

@@ -53,26 +53,4 @@ export class Ball extends Sprite {
         ctx.fill();
         ctx.restore();
     }
-
-    private static fixRotation(rotation: number): number {
-        rotation = rotation % (Math.PI * 2);
-        if (rotation < 0) rotation += Math.PI * 2;
-
-        const PI_5 = Math.PI / 5;
-        const PI_4_5 = Math.PI * 4 / 5;
-        const PI_6_5 = Math.PI * 6 / 5;
-        const PI_9_5 = Math.PI * 9 / 5;
-
-        if (rotation >= 0 && rotation <= PI_5) {
-            rotation = PI_5;
-        } else if (rotation >= PI_4_5 && rotation <= Math.PI) {
-            rotation = PI_4_5;
-        } else if (rotation > Math.PI && rotation <= PI_6_5) {
-            rotation = PI_6_5;
-        } else if (rotation >= PI_9_5 && rotation < Math.PI * 2) {
-            rotation = PI_9_5;
-        }
-
-        return rotation;
-    }
 } 
