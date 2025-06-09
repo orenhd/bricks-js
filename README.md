@@ -2,7 +2,7 @@
 
 A TypeScript/JavaScript conversion of a classic brick-breaking game, originally written in C#.
 
-🎮 [Play the game](https://orenhadar.github.io/bricks-js/)
+🎮 [Play the game](https://orenhd.github.io/bricks-js/)
 
 ## Features
 
@@ -34,7 +34,7 @@ This game is built using:
 
 ```bash
 # Clone the repository
-git clone https://github.com/orenhadar/bricks-js.git
+git clone https://github.com/orenhd/bricks-js.git
 
 # Navigate to project directory
 cd bricks-js
