@@ -27,13 +27,13 @@ export class Message {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
         ctx.fillRect(0, 0, GAME_CONSTANTS.BOARD_WIDTH, GAME_CONSTANTS.BOARD_HEIGHT);
 
-        ctx.font = '48px Arial';
-        ctx.fillStyle = 'white';
+        ctx.font = this.font;
+        ctx.fillStyle = this.textColor;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
         const lines = this.text.split('\n');
-        const lineHeight = 60;
+        const lineHeight = 30;
         const totalHeight = lines.length * lineHeight;
         const startY = (GAME_CONSTANTS.BOARD_HEIGHT - totalHeight) / 2;
 
