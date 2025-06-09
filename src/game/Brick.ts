@@ -58,7 +58,13 @@ export class Brick extends Sprite {
         if (this.type === BrickType.DoubleHit && this.borderColor) {
             ctx.strokeStyle = this.borderColor;
             ctx.lineWidth = 4;
-            ctx.strokeRect(this.location.x, this.location.y, this.size.width, this.size.height);
+            // Draw the stroke inside the brick's dimensions
+            ctx.strokeRect(
+                this.location.x + ctx.lineWidth/2,
+                this.location.y + ctx.lineWidth/2,
+                this.size.width - ctx.lineWidth,
+                this.size.height - ctx.lineWidth
+            );
         }
 
         ctx.restore();
