@@ -1,12 +1,12 @@
 import { InputManager } from './InputManager';
 
 export abstract class GameEngine {
+    private static readonly TARGET_FPS = 60;
+    private static readonly FRAME_TIME = 1000 / GameEngine.TARGET_FPS;
+    private lastTime: number = 0;
+    private running: boolean = false;
     protected canvas: HTMLCanvasElement;
     protected ctx: CanvasRenderingContext2D;
-    protected lastTime: number = 0;
-    protected gameTime: number = 0;
-    protected isRunning: boolean = false;
-    protected isPaused: boolean = false;
     protected input: InputManager;
 
     constructor(canvas: HTMLCanvasElement) {
@@ -20,33 +20,31 @@ export abstract class GameEngine {
     }
 
     public start(): void {
-        if (!this.isRunning) {
-            this.isRunning = true;
+        if (!this.running) {
+            this.running = true;
             this.lastTime = performance.now();
             requestAnimationFrame(this.gameLoop.bind(this));
         }
     }
 
     public stop(): void {
-        this.isRunning = false;
+        this.running = false;
     }
 
-    public togglePause(): void {
-        this.isPaused = !this.isPaused;
-    }
+    private gameLoop(currentTime: number): void {
+        if (!this.running) return;
 
-    private gameLoop(timestamp: number): void {
-        if (!this.isRunning) return;
-
-        const elapsedTime = (timestamp - this.lastTime) / 1000; // Convert to seconds
-        this.lastTime = timestamp;
-
-        if (!this.isPaused) {
-            this.gameTime += elapsedTime;
-            this.update(this.gameTime, elapsedTime);
+        const delta = currentTime - this.lastTime;
+        
+        // Only update if enough time has passed (frame limiting)
+        if (delta >= GameEngine.FRAME_TIME) {
+            this.lastTime = currentTime - (delta % GameEngine.FRAME_TIME);
+            
+            // Convert milliseconds to seconds for game logic
+            const elapsedTime = delta / 1000;
+            this.update(currentTime / 1000, elapsedTime);
+            this.draw();
         }
-
-        this.draw();
 
         requestAnimationFrame(this.gameLoop.bind(this));
     }
@@ -56,6 +54,6 @@ export abstract class GameEngine {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
-    abstract update(gameTime: number, elapsedTime: number): void;
-    abstract draw(): void;
+    protected abstract update(gameTime: number, elapsedTime: number): void;
+    protected abstract draw(): void;
 } 
