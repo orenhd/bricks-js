@@ -11,7 +11,9 @@ export class LevelLoader {
         try {
             // Load all levels if not already loaded
             if (!this.allLevels) {
-                const response = await fetch('/levels/levels.txt');
+                // Use base URL from Vite config
+                const base = import.meta.env.BASE_URL || '/';
+                const response = await fetch(`${base}levels/levels.txt`);
                 if (!response.ok) throw new Error('Levels file not found');
                 const text = await response.text();
                 this.allLevels = text.trim().split('\n');
