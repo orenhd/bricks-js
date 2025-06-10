@@ -117,6 +117,63 @@ export class BricksGame extends GameEngine {
             this.checkCollisions(ball, gameTime);
         });
 
+        // Update bonuses
+        this.bricks.forEach(brick => {
+            const bonus = brick.getBonus();
+            if (bonus && (bonus.getState() === SpriteState.Alive || bonus.getState() === SpriteState.Stunned)) {
+                bonus.update(gameTime, elapsedTime);
+
+                // Check if bonus hit bottom of screen
+                if (bonus.getLocation().y > GAME_CONSTANTS.BOARD_HEIGHT) {
+                    bonus.setState(SpriteState.Dead);
+                }
+                // Check if bonus hit paddle
+                else {
+                    const paddleBounds = {
+                        left: this.paddle.getLocation().x,
+                        right: this.paddle.getLocation().x + this.paddle.getSize().width,
+                        top: this.paddle.getLocation().y,
+                        bottom: this.paddle.getLocation().y + this.paddle.getSize().height
+                    };
+
+                    if (bonus.getLocation().y + GAME_CONSTANTS.BONUS_SIZE.height >= paddleBounds.top &&
+                        bonus.getLocation().x <= paddleBounds.right &&
+                        bonus.getLocation().x + GAME_CONSTANTS.BONUS_SIZE.width >= paddleBounds.left) {
+                        
+                        // First set to Stunned state
+                        if (bonus.getState() === SpriteState.Alive) {
+                            bonus.setState(SpriteState.Stunned);
+                        }
+                        // Then activate and set to Dead state on next frame
+                        else if (bonus.getState() === SpriteState.Stunned) {
+                            bonus.setState(SpriteState.Dead);
+                            this.score.addPoints(50);
+
+                            // Apply bonus effect
+                            switch (bonus.getType()) {
+                                case BonusType.ThreeBalls:
+                                    this.balls.forEach(b => {
+                                        if (b.getState() === SpriteState.Dead) {
+                                            b.setState(SpriteState.Alive);
+                                            b.setLocation(Ball.ORIG_LOCATION.clone());
+                                            b.setRotation(Math.PI / 4 + Math.random() * Math.PI / 3);
+                                        }
+                                    });
+                                    break;
+                                case BonusType.SuperSize:
+                                    this.paddle.setResizeState(PaddleResize.Grow);
+                                    break;
+                                case BonusType.SlowMotion:
+                                    this.isSlowMotion = true;
+                                    this.slowMotionTime = gameTime;
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
         // Check for level completion
         if (!this.isLevelComplete && this.bricks.every(brick => brick.getState() === SpriteState.Dead)) {
             this.isLevelComplete = true;
@@ -143,13 +200,15 @@ export class BricksGame extends GameEngine {
 
         // Draw game objects
         this.bricks.forEach(brick => {
+            // Draw brick if not dead
             if (brick.getState() !== SpriteState.Dead) {
                 brick.draw(this.ctx);
-                // Draw bonus if it exists and is active
-                const bonus = brick.getBonus();
-                if (bonus && bonus.getState() === SpriteState.Alive) {
-                    bonus.draw(this.ctx);
-                }
+            }
+            
+            // Draw bonus if it exists and is active (regardless of brick state)
+            const bonus = brick.getBonus();
+            if (bonus && (bonus.getState() === SpriteState.Alive || bonus.getState() === SpriteState.Stunned)) {
+                bonus.draw(this.ctx);
             }
         });
 
@@ -283,10 +342,10 @@ export class BricksGame extends GameEngine {
                         brick.setState(SpriteState.Dead);
                         this.score.addPoints(100);
 
-                        // Activate bonus if it exists
+                        // Start bonus falling if it exists
                         const bonus = brick.getBonus();
                         if (bonus && bonus.getState() === SpriteState.Dead) {
-                            bonus.setState(SpriteState.Alive);
+                            bonus.setState(SpriteState.Alive);  // Just makes it start falling
                         }
                     } else if (brick.getType() === BrickType.DoubleHit) {
                         brick.setState(SpriteState.Stunned);
@@ -295,45 +354,6 @@ export class BricksGame extends GameEngine {
                 }
             } else if (brick.getState() === SpriteState.Stunned) {
                 brick.setState(SpriteState.Alive);
-            }
-
-            // Update and check bonuses
-            const bonus = brick.getBonus();
-            if (bonus && bonus.getState() === SpriteState.Alive) {
-                bonus.update(gameTime, 1/60); // Using fixed time step for consistent falling speed
-
-                // Check if bonus hit bottom of screen
-                if (bonus.getLocation().y > GAME_CONSTANTS.BOARD_HEIGHT) {
-                    bonus.setState(SpriteState.Dead);
-                }
-                // Check if bonus hit paddle
-                else if (bonus.getLocation().y + GAME_CONSTANTS.BONUS_SIZE.height >= paddleBounds.top &&
-                    bonus.getLocation().x <= paddleBounds.right &&
-                    bonus.getLocation().x + GAME_CONSTANTS.BONUS_SIZE.width >= paddleBounds.left) {
-                    
-                    bonus.setState(SpriteState.Dead);
-                    this.score.addPoints(50);
-
-                    // Apply bonus effect
-                    switch (bonus.getType()) {
-                        case BonusType.ThreeBalls:
-                            this.balls.forEach(b => {
-                                if (b.getState() === SpriteState.Dead) {
-                                    b.setState(SpriteState.Alive);
-                                    b.setLocation(Ball.ORIG_LOCATION.clone());
-                                    b.setRotation(Math.PI / 4 + Math.random() * Math.PI / 3);
-                                }
-                            });
-                            break;
-                        case BonusType.SuperSize:
-                            this.paddle.setResizeState(PaddleResize.Grow);
-                            break;
-                        case BonusType.SlowMotion:
-                            this.isSlowMotion = true;
-                            this.slowMotionTime = gameTime;
-                            break;
-                    }
-                }
             }
         });
 

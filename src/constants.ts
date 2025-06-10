@@ -3,7 +3,7 @@ export const GAME_CONSTANTS = {
     BOARD_HEIGHT: 512,
     CLIENT_HEIGHT: 560,
     PADDLE_SPEED: 350,
-    BALL_SPEED: 300,
+    BALL_SPEED: 200,
     BONUS_SPEED: 150,
     PADDLE_NORMAL_SIZE: { width: 60, height: 20 } as const,
     PADDLE_SUPER_SIZE: { width: 90, height: 20 } as const,
