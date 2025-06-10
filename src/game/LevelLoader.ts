@@ -87,11 +87,16 @@ export class LevelLoader {
 
     private static parseBonusType(char: string): BonusType {
         switch (char) {
-            case '3': return BonusType.ThreeBalls;
-            case '4': return BonusType.SuperSize;
-            case '5': return BonusType.SlowMotion;
-            case '-': return BonusType.None;
-            default: return BonusType.None;
+            case '3':
+                return BonusType.ThreeBalls;
+            case '4':
+                return BonusType.SuperSize;
+            case '5':
+                return BonusType.SlowMotion;
+            case '6':
+                return BonusType.BadPoints;
+            default:
+                return BonusType.None;
         }
     }
 } 

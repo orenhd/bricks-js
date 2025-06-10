@@ -167,6 +167,9 @@ export class BricksGame extends GameEngine {
                                     this.isSlowMotion = true;
                                     this.slowMotionTime = gameTime;
                                     break;
+                                case BonusType.BadPoints:
+                                    this.score.addPoints(-10); // Subtract 10 points
+                                    break;
                             }
                         }
                     }

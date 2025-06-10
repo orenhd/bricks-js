@@ -1,10 +1,10 @@
 1
 D4D-D4D-D-D-D-D-
-R-R-R-R-R4R-R-R3
+R-R-R6R-R4R-R-R3
 R-R-R-R-R-R-R-R-
-R5R-R3R-R4R-R5R-
+R5R-R3R-R4R6R5R-
 R-R-R-R-R-R-R-R-
-R-R4R-R-R-R3R-R-
+R6R4R-R-R-R3R-R-
 _-_-_-_-_-_-_-_-
 _-_-_-_-_-_-_-_-
 

@@ -29,6 +29,10 @@ export class Bonus extends Sprite {
                 this.rectangleColor = 'slategray';
                 this.triangleColor = 'mediumorchid';
                 break;
+            case BonusType.BadPoints:
+                this.rectangleColor = '#1a1a1a'; // Almost black
+                this.triangleColor = '#8b0000'; // Dark red
+                break;
             default:
                 this.rectangleColor = 'white';
                 this.triangleColor = 'gray';

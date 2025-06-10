@@ -38,5 +38,6 @@ export enum BonusType {
     None = 'None',
     ThreeBalls = 'ThreeBalls',
     SuperSize = 'SuperSize',
-    SlowMotion = 'SlowMotion'
+    SlowMotion = 'SlowMotion',
+    BadPoints = 'BadPoints'
 } 
