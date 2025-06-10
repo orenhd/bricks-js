@@ -1,4 +1,4 @@
-import { BonusType, GAME_CONSTANTS } from '../constants';
+import { BonusType, GAME_CONSTANTS, SpriteState } from '../constants';
 import { Sprite } from './Sprite';
 
 export class Bonus extends Sprite {
@@ -13,6 +13,7 @@ export class Bonus extends Sprite {
     constructor(type: BonusType, x: number, y: number) {
         super(x, y, GAME_CONSTANTS.BONUS_SPEED);
         this.type = type;
+        this.state = SpriteState.Dead; // Start in Dead state
         
         // Set colors based on bonus type
         switch (type) {

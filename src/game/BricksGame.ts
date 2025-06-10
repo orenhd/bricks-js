@@ -145,6 +145,11 @@ export class BricksGame extends GameEngine {
         this.bricks.forEach(brick => {
             if (brick.getState() !== SpriteState.Dead) {
                 brick.draw(this.ctx);
+                // Draw bonus if it exists and is active
+                const bonus = brick.getBonus();
+                if (bonus && bonus.getState() === SpriteState.Alive) {
+                    bonus.draw(this.ctx);
+                }
             }
         });
 
@@ -194,49 +199,73 @@ export class BricksGame extends GameEngine {
             return;
         }
 
-        // Paddle collisions
-        if (this.paddle.bounceLeftEdge(ball)) {
-            // Adjust ball position and set fixed angle for left edge
-            const newY = this.paddle.getLocation().y +
-                (this.paddle.getLocation().x - ball.getLocation().x) -
-                Math.sin(45) * ball.getRadius();
-            ball.setLocation(new Vector2D(ball.getLocation().x, newY));
-            ball.setRotation(Math.PI * 9 / 5);
-        } else if (this.paddle.bounceRightEdge(ball)) {
-            // Adjust ball position and set fixed angle for right edge
-            const newY = this.paddle.getLocation().y +
-                (ball.getLocation().x - this.paddle.getLocation().x - this.paddle.getSize().width) -
-                Math.sin(45) * ball.getRadius();
-            ball.setLocation(new Vector2D(ball.getLocation().x, newY));
-            ball.setRotation(Math.PI * 6 / 5);
-        } else if (this.paddle.bouncePaddle(ball)) {
-            // Adjust ball position to top of paddle and calculate bounce angle
-            ball.setLocation(new Vector2D(ball.getLocation().x, this.paddle.getLocation().y - ball.getRadius()));
-            ball.setRotation(this.paddle.calculateBouncePaddle(ball));
+        // Paddle collision
+        const paddleBounds = {
+            left: this.paddle.getLocation().x,
+            right: this.paddle.getLocation().x + this.paddle.getSize().width,
+            top: this.paddle.getLocation().y,
+            bottom: this.paddle.getLocation().y + this.paddle.getSize().height
+        };
+
+        // Left triangle collision
+        const leftEdgeHeight = this.paddle.getSize().height;
+        if (ball.getLocation().y + ball.getRadius() >= paddleBounds.top &&
+            ball.getLocation().y - ball.getRadius() <= paddleBounds.bottom &&
+            ball.getLocation().x >= paddleBounds.left - leftEdgeHeight &&
+            ball.getLocation().x <= paddleBounds.left &&
+            ball.getVelocity().y > 0) {
+            
+            ball.setLocation(new Vector2D(ball.getLocation().x, paddleBounds.top - ball.getRadius()));
+            ball.setRotation(Math.PI * 9 / 5); // Fixed angle for left edge
+            return;
+        }
+
+        // Right triangle collision
+        if (ball.getLocation().y + ball.getRadius() >= paddleBounds.top &&
+            ball.getLocation().y - ball.getRadius() <= paddleBounds.bottom &&
+            ball.getLocation().x >= paddleBounds.right &&
+            ball.getLocation().x <= paddleBounds.right + leftEdgeHeight &&
+            ball.getVelocity().y > 0) {
+            
+            ball.setLocation(new Vector2D(ball.getLocation().x, paddleBounds.top - ball.getRadius()));
+            ball.setRotation(Math.PI * 6 / 5); // Fixed angle for right edge
+            return;
+        }
+
+        // Main paddle collision
+        if (ball.getLocation().y + ball.getRadius() >= paddleBounds.top &&
+            ball.getLocation().y - ball.getRadius() <= paddleBounds.bottom &&
+            ball.getLocation().x >= paddleBounds.left &&
+            ball.getLocation().x <= paddleBounds.right &&
+            ball.getVelocity().y > 0) {
+            
+            ball.setLocation(new Vector2D(ball.getLocation().x, paddleBounds.top - ball.getRadius()));
+            
+            // Calculate new angle based on where the ball hit the paddle
+            const hitPoint = (ball.getLocation().x - paddleBounds.left) / this.paddle.getSize().width;
+            const newAngle = Math.PI * (1.8 - 0.6 * hitPoint); // This makes the ball go upward (π to 1.2π range)
+            ball.setRotation(newAngle);
+            return;
         }
 
         // Brick collisions
         let isBounce = false;
         let newRotation = ball.getRotation();
-        
+
         this.bricks.forEach(brick => {
             if (brick.getState() === SpriteState.Dead) return;
 
             const brickBounds = {
                 left: brick.getLocation().x,
-                right: brick.getLocation().x + brick.getSize().width,
+                right: brick.getLocation().x + GAME_CONSTANTS.BRICK_SIZE.width,
                 top: brick.getLocation().y,
-                bottom: brick.getLocation().y + brick.getSize().height
+                bottom: brick.getLocation().y + GAME_CONSTANTS.BRICK_SIZE.height
             };
 
-            const ballLoc = ball.getLocation();
-            const radius = ball.getRadius();
-
-            // Check if ball is near brick
-            if (ballLoc.x + radius >= brickBounds.left &&
-                ballLoc.x - radius <= brickBounds.right &&
-                ballLoc.y + radius >= brickBounds.top &&
-                ballLoc.y - radius <= brickBounds.bottom) {
+            if (ball.getLocation().x - ball.getRadius() <= brickBounds.right &&
+                ball.getLocation().x + ball.getRadius() >= brickBounds.left &&
+                ball.getLocation().y - ball.getRadius() <= brickBounds.bottom &&
+                ball.getLocation().y + ball.getRadius() >= brickBounds.top) {
 
                 if (brick.getState() !== SpriteState.Stunned) {
                     isBounce = true;
@@ -254,7 +283,7 @@ export class BricksGame extends GameEngine {
                         brick.setState(SpriteState.Dead);
                         this.score.addPoints(100);
 
-                        // Handle bonus
+                        // Activate bonus if it exists
                         const bonus = brick.getBonus();
                         if (bonus && bonus.getState() === SpriteState.Dead) {
                             bonus.setState(SpriteState.Alive);
@@ -263,31 +292,47 @@ export class BricksGame extends GameEngine {
                         brick.setState(SpriteState.Stunned);
                         brick.setType(BrickType.Regular);
                     }
+                }
+            } else if (brick.getState() === SpriteState.Stunned) {
+                brick.setState(SpriteState.Alive);
+            }
 
-                    // Handle bonus activation
-                    const bonus = brick.getBonus();
-                    if (bonus && bonus.getState() === SpriteState.Alive) {
-                        switch (bonus.getType()) {
-                            case BonusType.ThreeBalls:
-                                this.balls.forEach(b => {
-                                    if (b.getState() === SpriteState.Dead) {
-                                        b.setState(SpriteState.Alive);
-                                        b.setLocation(ball.getLocation().clone());
-                                        b.setRotation(Math.random() * Math.PI * 2);
-                                    }
-                                });
-                                break;
-                            case BonusType.SuperSize:
-                                this.paddle.setResizeState(PaddleResize.Grow);
-                                break;
-                            case BonusType.SlowMotion:
-                                this.isSlowMotion = true;
-                                this.slowMotionTime = gameTime;
-                                break;
-                        }
+            // Update and check bonuses
+            const bonus = brick.getBonus();
+            if (bonus && bonus.getState() === SpriteState.Alive) {
+                bonus.update(gameTime, 1/60); // Using fixed time step for consistent falling speed
+
+                // Check if bonus hit bottom of screen
+                if (bonus.getLocation().y > GAME_CONSTANTS.BOARD_HEIGHT) {
+                    bonus.setState(SpriteState.Dead);
+                }
+                // Check if bonus hit paddle
+                else if (bonus.getLocation().y + GAME_CONSTANTS.BONUS_SIZE.height >= paddleBounds.top &&
+                    bonus.getLocation().x <= paddleBounds.right &&
+                    bonus.getLocation().x + GAME_CONSTANTS.BONUS_SIZE.width >= paddleBounds.left) {
+                    
+                    bonus.setState(SpriteState.Dead);
+                    this.score.addPoints(50);
+
+                    // Apply bonus effect
+                    switch (bonus.getType()) {
+                        case BonusType.ThreeBalls:
+                            this.balls.forEach(b => {
+                                if (b.getState() === SpriteState.Dead) {
+                                    b.setState(SpriteState.Alive);
+                                    b.setLocation(Ball.ORIG_LOCATION.clone());
+                                    b.setRotation(Math.PI / 4 + Math.random() * Math.PI / 3);
+                                }
+                            });
+                            break;
+                        case BonusType.SuperSize:
+                            this.paddle.setResizeState(PaddleResize.Grow);
+                            break;
+                        case BonusType.SlowMotion:
+                            this.isSlowMotion = true;
+                            this.slowMotionTime = gameTime;
+                            break;
                     }
-                } else if (brick.getState() === SpriteState.Stunned) {
-                    brick.setState(SpriteState.Alive);
                 }
             }
         });
