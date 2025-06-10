@@ -226,7 +226,7 @@ export class BricksGame extends GameEngine {
         this.message.draw(this.ctx);
     }
 
-    private checkCollisions(ball: Ball, gameTime: number): void {
+    private checkCollisions(ball: Ball, _gameTime: number): void {
         // Wall collisions
         if (ball.getLocation().x + ball.getRadius() >= GAME_CONSTANTS.BOARD_WIDTH) {
             ball.setLocation(new Vector2D(GAME_CONSTANTS.BOARD_WIDTH - ball.getRadius(), ball.getLocation().y));
