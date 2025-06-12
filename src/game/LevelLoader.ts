@@ -6,6 +6,7 @@ export class LevelLoader {
     private static readonly ROWS = 8;
     private static readonly COLS = 8;
     private static allLevels: string[] | null = null;
+    private static levelCount: number = 0;
 
     public static async loadLevel(levelNumber: number): Promise<Brick[]> {
         try {
@@ -17,19 +18,28 @@ export class LevelLoader {
                 if (!response.ok) throw new Error('Levels file not found');
                 const text = await response.text();
                 this.allLevels = text.trim().split('\n');
+                
+                // Count number of levels by counting level number lines
+                this.levelCount = this.allLevels.reduce((count, line) => {
+                    return count + (line.trim().match(/^\d+$/) ? 1 : 0);
+                }, 0);
             }
+
+            // Convert level number to looped level number
+            // e.g., if we have 2 levels: level 3 -> 1, level 4 -> 2, level 5 -> 1, etc.
+            const loopedLevelNumber = ((levelNumber - 1) % this.levelCount) + 1;
 
             // Find the start of the requested level
             let levelStart = -1;
             for (let i = 0; i < this.allLevels.length; i++) {
-                if (this.allLevels[i].trim() === levelNumber.toString()) {
+                if (this.allLevels[i].trim() === loopedLevelNumber.toString()) {
                     levelStart = i + 1; // Skip the level number line
                     break;
                 }
             }
 
             if (levelStart === -1) {
-                console.error('Level not found:', levelNumber);
+                console.error('Level not found:', loopedLevelNumber);
                 return [];
             }
 
