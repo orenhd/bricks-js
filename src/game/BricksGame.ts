@@ -54,6 +54,8 @@ export class BricksGame extends GameEngine {
         this.bricks = await LevelLoader.loadLevel(levelNum);
         this.isLevelComplete = false;
         this.gameState = GameState.Intro;
+        this.isSlowMotion = false; // Reset slow motion state
+        this.slowMotionTime = 0;
         
         // Add an extra life
         for (let i = this.lives.length - 1; i >= 0; i--) {
@@ -76,6 +78,8 @@ export class BricksGame extends GameEngine {
         this.balls[0].setState(SpriteState.Alive);
         
         this.paddle.reset();
+        this.isSlowMotion = false; // Reset slow motion state
+        this.slowMotionTime = 0;
     }
 
     override update(gameTime: number, elapsedTime: number): void {
